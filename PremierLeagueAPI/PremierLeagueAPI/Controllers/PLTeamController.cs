@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PremierLeagueAPI.Models;
+using System.Reflection;
+using System.Xml.Linq;
 
 namespace PremierLeagueAPI.Controllers
 {
@@ -58,6 +60,37 @@ namespace PremierLeagueAPI.Controllers
         { 
             plTeams.Add(team);
             return Ok(plTeams);
+        }
+
+        [HttpPut("UpdateField/{id}")]
+
+        public async Task<ActionResult<PLTeam>> UpdateField(int id, string field, string value)
+        {
+            var fields = new Dictionary<string, string>()
+            {
+                {"matchesplayed", "MatchesPlayed"},
+                {"goalsscored", "GoalsScored"},
+                {"goalsconceded", "GoalsConceded"},
+                {"points", "Points"}
+            };
+
+            var plTeam = plTeams.Find(x => x.Id == id);
+            if (plTeam is null)
+                return NotFound($"sorry, {id} is not in the current Premier League");
+            // check if field is id {type int}
+            field = field.ToLower();
+           
+            foreach(var item in fields)
+                if (item.Key == field)
+                    field = item.Value;
+
+            PropertyInfo attr = plTeam.GetType().GetProperty(field);
+            // update field
+            int intValue = Int32.Parse(value);
+            if (attr != null && attr.CanWrite)
+                attr.SetValue(plTeam, intValue);
+          
+            return Ok(plTeam);
         }
     }
 }
