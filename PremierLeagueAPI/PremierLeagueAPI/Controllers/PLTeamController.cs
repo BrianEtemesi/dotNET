@@ -52,5 +52,12 @@ namespace PremierLeagueAPI.Controllers
                 return NotFound($"sorry, {name} is not in the current Premier League");
             return Ok(plTeam);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<List<PLTeam>>> AddNewPLTeam(PLTeam team)
+        { 
+            plTeams.Add(team);
+            return Ok(plTeams);
+        }
     }
 }
