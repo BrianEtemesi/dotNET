@@ -35,10 +35,21 @@ namespace PremierLeagueAPI.Controllers
             return Ok(plTeams);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("ById/{id}")]
         public async Task<ActionResult<PLTeam>> GetAllPLTeamById(int id)
         {
             var plTeam = plTeams.Find(x => x.Id == id);
+            if (plTeam is null)
+                return NotFound($"sorry, team with id {id} doesn't exist");
+            return Ok(plTeam);
+        }
+
+        [HttpGet("ByName/{name}")]
+        public async Task<ActionResult<PLTeam>> GetAllPLTeamByName(string name)
+        {
+            var plTeam = plTeams.Find(x => x.Name == name);
+            if (plTeam is null)
+                return NotFound($"sorry, {name} is not in the current Premier League");
             return Ok(plTeam);
         }
     }
