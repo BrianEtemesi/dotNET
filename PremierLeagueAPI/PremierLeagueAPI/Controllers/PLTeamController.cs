@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PremierLeagueAPI.Models;
+using Microsoft.AspNetCore.Mvc.Filters;
+using PremierLeagueAPI.Services.PremierLeagueService;
 using System.Reflection;
 using System.Xml.Linq;
 
@@ -10,87 +11,62 @@ namespace PremierLeagueAPI.Controllers
     [ApiController]
     public class PLTeamController : ControllerBase
     {
-        private static List<PLTeam> plTeams = new List<PLTeam> {
-                new PLTeam
-                {
-                    Id = 441,
-                    Name = "Chelsea"
+        private readonly IPremierLeagueSevice _premierLeagueSevice;
 
-                },
-                new PLTeam
-                {
-                    Id = 442,
-                    Name = "Mancheter United"
+        public PLTeamController(IPremierLeagueSevice premierLeagueSevice)
+        {
+            _premierLeagueSevice = premierLeagueSevice;
+        }
 
-                },
-                new PLTeam
-                {
-                    Id = 443,
-                    Name = "Arsenal"
-
-                }
-            };
-
-        [HttpGet]
+        [HttpGet("PLTeams")]
         public async Task<ActionResult<List<PLTeam>>> GetAllPLTeams()
         {
-            return Ok(plTeams);
+            var result = _premierLeagueSevice.GetAllPLTeams();
+            return Ok(result);
         }
 
         [HttpGet("ById/{id}")]
         public async Task<ActionResult<PLTeam>> GetAllPLTeamById(int id)
         {
-            var plTeam = plTeams.Find(x => x.Id == id);
-            if (plTeam is null)
-                return NotFound($"sorry, team with id {id} doesn't exist");
-            return Ok(plTeam);
+            var result = _premierLeagueSevice.GetAllPLTeamById(id);
+            if (result is null)
+                return NotFound($"Sorry, id {id} doesn't exist");
+            return Ok(result);
         }
 
         [HttpGet("ByName/{name}")]
         public async Task<ActionResult<PLTeam>> GetAllPLTeamByName(string name)
         {
-            var plTeam = plTeams.Find(x => x.Name == name);
-            if (plTeam is null)
-                return NotFound($"sorry, {name} is not in the current Premier League");
-            return Ok(plTeam);
+            var result = _premierLeagueSevice.GetAllPLTeamByName(name);
+            if (result is null)
+                return NotFound($"Sorry, {name} is not in the current Premier League");
+            return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("AddPLTeam")]
         public async Task<ActionResult<List<PLTeam>>> AddNewPLTeam(PLTeam team)
         { 
-            plTeams.Add(team);
-            return Ok(plTeams);
+            var result = _premierLeagueSevice.AddNewPLTeam(team); 
+            return Ok(result);
         }
 
         [HttpPut("UpdateField/{id}")]
 
         public async Task<ActionResult<PLTeam>> UpdateField(int id, string field, string value)
         {
-            var fields = new Dictionary<string, string>()
-            {
-                {"matchesplayed", "MatchesPlayed"},
-                {"goalsscored", "GoalsScored"},
-                {"goalsconceded", "GoalsConceded"},
-                {"points", "Points"}
-            };
+            var result = _premierLeagueSevice.UpdateField(id, field, value);
+            if (result is null)
+                return NotFound($"sorry, {id} not a valid id of a current premier league team");
+            return Ok(result);
+        }
 
-            var plTeam = plTeams.Find(x => x.Id == id);
-            if (plTeam is null)
-                return NotFound($"sorry, {id} is not in the current Premier League");
-            // check if field is id {type int}
-            field = field.ToLower();
-           
-            foreach(var item in fields)
-                if (item.Key == field)
-                    field = item.Value;
-
-            PropertyInfo attr = plTeam.GetType().GetProperty(field);
-            // update field
-            int intValue = Int32.Parse(value);
-            if (attr != null && attr.CanWrite)
-                attr.SetValue(plTeam, intValue);
-          
-            return Ok(plTeam);
+        [HttpDelete("DeletePLTeam/{name}")]
+        public async Task<ActionResult<List<PLTeam>>> DeletePLTeam(string name)
+        {
+            var result = _premierLeagueSevice.DeletePLTeam(name);
+            if (result is null)
+                return NotFound($"Sorry, {name} is not in the current Premier League");
+            return Ok(result);
         }
     }
 }
